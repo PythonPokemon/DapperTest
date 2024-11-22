@@ -1,0 +1,17 @@
+﻿<Window x:Class="DapperTest.Views.StartWindowView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DapperTest.Views"
+        mc:Ignorable="d"
+        Title="Startfenster" Height="450" Width="800">
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Content="Anmelden" Width="150" Height="40" Margin="0,10"
+            Click="LoginButton_Click"/>
+            <Button Content="Registrieren" Width="150" Height="40" Margin="0,10"
+            Click="RegisterButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
