@@ -1,6 +1,8 @@
-﻿using DapperTest.Utils;
+﻿using Dapper;
+using DapperTest.Utils;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,9 +18,7 @@ using System.Windows.Shapes;
 
 namespace DapperTest.Views
 {
-    /// <summary>
-    /// Interaktionslogik für LoginView.xaml
-    /// </summary>
+    
     public partial class LoginView : Window
     {
         public LoginView()
@@ -43,21 +43,35 @@ namespace DapperTest.Views
             }
         }
 
+        
+
         private bool ValidateUser(string username, string password)
         {
-            string hashedPassword = PasswordHelper.HashPassword(password);
-
-            if (File.Exists("users.txt"))
+            try
             {
-                foreach (var line in File.ReadAllLines("users.txt"))
+                string connectionString = Properties.Settings.Default.DapperConnectionString;
+
+                using (var connection = new SqlConnection(connectionString))
                 {
-                    var parts = line.Split('|');
-                    if (parts[2] == username && parts[3] == hashedPassword) // parts[2] = Username, parts[3] = gehashtes Passwort
+                    connection.Open();
+
+                    string query = "SELECT PasswortHash FROM Benutzer WHERE Benutzername = @Username";
+                    string storedHash = connection.QuerySingleOrDefault<string>(query, new { Username = username });
+
+                    if (storedHash != null && PasswordHelper.HashPassword(password) == storedHash)
+                    {
                         return true;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler bei der Benutzerüberprüfung: {ex.Message}");
             }
             return false;
         }
+
+
 
     }
 }

@@ -1,6 +1,8 @@
-﻿using DapperTest.Utils;
+﻿using Dapper;
+using DapperTest.Utils;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,9 +18,7 @@ using System.Windows.Shapes;
 
 namespace DapperTest.Views
 {
-    /// <summary>
-    /// Interaktionslogik für RegisterView.xaml
-    /// </summary>
+    
     public partial class RegisterView : Window
     {
         public RegisterView()
@@ -44,10 +44,9 @@ namespace DapperTest.Views
                 return;
             }
 
-            // Das Passwort wird hier gehasht
             string hashedPassword = PasswordHelper.HashPassword(password);
 
-            // Speichern der Benutzerdaten
+            // Speichere den Benutzer in der Datenbank
             SaveUser(firstName, lastName, username, hashedPassword, email, phone, address, birthDate);
             MessageBox.Show("Registrierung erfolgreich!");
 
@@ -56,11 +55,45 @@ namespace DapperTest.Views
             this.Close();
         }
 
+
+        
+
         private void SaveUser(string firstName, string lastName, string username, string hashedPassword, string email, string phone, string address, string birthDate)
         {
-            string userData = $"{firstName}|{lastName}|{username}|{hashedPassword}|{email}|{phone}|{address}|{birthDate}";
-            File.AppendAllLines("users.txt", new[] { userData });
+            try
+            {
+                string connectionString = Properties.Settings.Default.DapperConnectionString;
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"
+                INSERT INTO Benutzer (Vorname, Nachname, Benutzername, PasswortHash, Email, Telefonnummer, Adresse, Geburtsdatum)
+                VALUES (@FirstName, @LastName, @Username, @PasswordHash, @Email, @Phone, @Address, @BirthDate)";
+
+                    var parameters = new
+                    {
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Username = username,
+                        PasswordHash = hashedPassword,
+                        Email = email,
+                        Phone = phone,
+                        Address = address,
+                        BirthDate = birthDate
+                    };
+
+                    connection.Execute(query, parameters);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Fehler beim Speichern der Benutzerdaten: {ex.Message}");
+            }
         }
+
+
 
     }
 }
